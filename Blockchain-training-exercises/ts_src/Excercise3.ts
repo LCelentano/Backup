@@ -109,6 +109,7 @@ function test() {
     // }
     child_gen('food inmate escape rough like flavor fee moment change wheel film column')
     trans_chkr()
+    // the code still completes when in the while loop, its just that it wont print anything, due to my guess being that there are a lot of things happening
 }
 
 test()
