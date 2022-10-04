@@ -38,69 +38,46 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 exports.__esModule = true;
 var ether = require("ethers");
 var axios = require('axios');
-var alchemy_sdk_1 = require("alchemy-sdk");
-//import * as bitcoin from 'bitcoinjs-lib';
-//ctrl+shift+/ for mass comment or just /* */
-// const ECPair = ECPairFactory(ecc)
-// const bip32 = BIP32Factory(ecc);
-// var add_index = 0, glbl_total = 0, stop_counter = 0;
-// var address = null, child = null, path = null, unspent = null;
-// var children = {};
-// const validator = (
-//     pubkey: Buffer,
-//     msghash: Buffer,
-//     signature: Buffer,
-// ): boolean => ECPair.fromPublicKey(pubkey).verify(msghash, signature);
-function Alchemical(apiKey, network) {
+var fs = require("fs");
+var Child = require("./Child.json");
+// const transaction = require('./transaction.json');
+//import { loadJsonFile } from 'load-json-file';
+//import * as Web3 from 'web3';
+//const Web3 = require('web3')
+//import { toBytes, toHex } from 'hex-my-bytes'
+function transBroad(value, destination, apiKey) {
     return __awaiter(this, void 0, void 0, function () {
-        var settings, alchemy, block, provider, tx;
-        return __generator(this, function (_a) {
-            switch (_a.label) {
-                case 0:
-                    settings = {
-                        apiKey: apiKey,
-                        network: network
-                    };
-                    alchemy = new alchemy_sdk_1.Alchemy(settings);
-                    return [4 /*yield*/, alchemy.core.getBlockNumber()];
-                case 1:
-                    block = _a.sent();
-                    provider = new ether.providers.AlchemyProvider("goerli", apiKey);
-                    return [4 /*yield*/, provider.getBlockWithTransactions(block)
-                        //console.log(tx)
-                    ];
-                case 2:
-                    tx = _a.sent();
-                    //console.log(tx)
-                    return [2 /*return*/, [tx, provider]];
-            }
-        });
-    });
-}
-//Alchemical("lkbb4VMbwbhvriG-2UqK83r-qzMXG2pb", Network.ETH_GOERLI)
-function transactions(mnemonic) {
-    return __awaiter(this, void 0, void 0, function () {
-        var _a, tx, provider, EtherMnemonic, EtherPrivate, EtherAddress, EtherWallet, broadcast;
+        var child, address, provider, gasPrice, v, tx, json, signature, signature2, broadcast;
+        var _a;
         return __generator(this, function (_b) {
             switch (_b.label) {
-                case 0: return [4 /*yield*/, Alchemical("lkbb4VMbwbhvriG-2UqK83r-qzMXG2pb", alchemy_sdk_1.Network.ETH_GOERLI)];
-                case 1:
-                    _a = _b.sent(), tx = _a[0], provider = _a[1];
-                    EtherMnemonic = ether.Wallet.fromMnemonic(mnemonic);
-                    EtherPrivate = new ether.Wallet(EtherMnemonic.privateKey);
-                    EtherAddress = EtherMnemonic.address;
-                    //alchemy.core.getTokenBalances(EtherAddress)
-                    //console.log(EtherMnemonic.mnemonic)
-                    //console.log(EtherPrivate.mnemonic)
-                    return [4 /*yield*/, EtherMnemonic.signTransaction(tx)];
+                case 0:
+                    child = Child["xPub"];
+                    address = ether.utils.computeAddress(child);
+                    provider = new ether.providers.AlchemyProvider("goerli", apiKey);
+                    return [4 /*yield*/, provider.getGasPrice()];
+                case 1: return [4 /*yield*/, (_b.sent()).toNumber()];
                 case 2:
-                    //alchemy.core.getTokenBalances(EtherAddress)
-                    //console.log(EtherMnemonic.mnemonic)
-                    //console.log(EtherPrivate.mnemonic)
-                    _b.sent();
-                    EtherWallet = EtherMnemonic.connect(provider);
-                    return [4 /*yield*/, EtherWallet.sendTransaction(tx)];
+                    gasPrice = _b.sent();
+                    v = ether.BigNumber.from(value).toNumber();
+                    _a = {
+                        to: destination
+                    };
+                    return [4 /*yield*/, provider.getTransactionCount(address)];
                 case 3:
+                    tx = (_a.nonce = _b.sent(),
+                        _a.gasPrice = gasPrice,
+                        _a.value = v,
+                        _a.chainId = 5,
+                        _a.gas = 21000,
+                        _a);
+                    json = JSON.stringify(tx);
+                    fs.writeFileSync("./transaction.json", json);
+                    signature = fs.readFileSync("./signature.json", "utf-8");
+                    signature2 = JSON.parse(signature);
+                    console.log(signature2);
+                    return [4 /*yield*/, provider.sendTransaction(signature2.rawTransaction)];
+                case 4:
                     broadcast = _b.sent();
                     console.log(broadcast);
                     return [2 /*return*/];
@@ -108,75 +85,39 @@ function transactions(mnemonic) {
         });
     });
 }
-transactions('food inmate escape rough like flavor fee moment change wheel film column');
-// async function trans_chkr() {
-//     const AXIOS_ROOT = `https://blockstream.info/testnet/api/`
-//     // console.log("address index",add_index);
-//     // console.log(address);
-//     let unspent = (await axios.get(`${AXIOS_ROOT}address/${address}/utxo`)).data
-//     //console.log(unspent[0]);
-//     try {
-//         if (unspent[0].value > 0) {
-//             const child_node = {
-//                 UTXO: unspent,
-//                 Address: address,
-//                 Child: child,
-//                 Path: path
-//             }
-//             children[address] = child_node;
-//             //console.log(children)
-//             const raw  = (await axios.get(`${AXIOS_ROOT}tx/${children[address].UTXO[0].txid}/hex`)).data
-//             //console.log(raw);
-//             const psbt = new bitcoin.Psbt({network: bitcoin.networks.testnet})
-//                 .addInput({hash: children[address].UTXO[0].txid, index: children[address].UTXO[0].vout, nonWitnessUtxo: Buffer.from(raw, 'hex')})
-//                 .addOutput({
-//                     address: "tb1ql7w62elx9ucw4pj5lgw4l028hmuw80sndtntxt",
-//                     value: (unspent[0].value)-(unspent[0].value/2)-250,
-//                 }) // the actual "spend"
-//                 .addOutput({
-//                     address: address,
-//                     value: unspent[0].value/2,
-//                 })
-//                 .signInput(0, child);
-//             psbt.finalizeAllInputs();
-//             console.log("psbt",psbt);
-//             console.log(psbt.extractTransaction().toHex())
-//             const broadcast = await axios.post(`${AXIOS_ROOT}tx`,psbt.extractTransaction().toHex())
-//             console.log("broadcast\n", broadcast);
-//             stop_counter = 0;
-//             glbl_total += unspent[0].value;
-//             //console.log(stop_counter);
-//             //console.log(glbl_total);
-//             child_gen('food inmate escape rough like flavor fee moment change wheel film column')
-//         } else {
-//             stop_counter += 1;
-//             //console.log("else", stop_counter)
-//         }
-//     } catch {
-//         stop_counter += 1;
-//         //console.log("catch",stop_counter);
-//     }
-//     //let raw  = (await axios.get(`${AXIOS_ROOT}tx/${unspent[0].txid}/hex`)).data
-//     /*const psbt = new bitcoin.Psbt({network: bitcoin.networks.testnet})
-//     .addInput({hash: unspent[0].txid, index: unspent[0].vout, nonWitnessUtxo: Buffer.from(raw, 'hex')})
-//     .addOutput({
-//         address: getAddress(child, bitcoin.networks.testnet),
-//         value: (unspent[0].value)-50-250,
-//     }) // the actual "spend"
-//     .signInput(0, child);*/
-//     //psbt.finalizeAllInputs();
+transBroad(1000, "0x71CB05EE1b1F506fF321Da3dac38f25c0c9ce6E1", "lkbb4VMbwbhvriG-2UqK83r-qzMXG2pb");
+//SignBroadcast("lkbb4VMbwbhvriG-2UqK83r-qzMXG2pb", Network.ETH_GOERLI)
+// async function SignBroadcast(apiKey: string, network: any) {
+//     const settings = {
+//         apiKey: apiKey,
+//         network: network,
+//     };
+//     //let EtherMnemonic = ether.Wallet.fromMnemonic('food inmate escape rough like flavor fee moment change wheel film column');
+//     // 
+//     // let EtherWallet = EtherMnemonic.connect(provider)
+//     // console.log(await EtherWallet.getBalance())
+//     // const tx = trans_gen(1000, "0x71CB05EE1b1F506fF321Da3dac38f25c0c9ce6E1")
+//     // await EtherWallet.signTransaction(tx)
+//     // await EtherWallet.sendTransaction(tx)
 // }
-// function test() {
-//     var i = 0
-//     // while (i < 26) {
-//     //     child_gen('food inmate escape rough like flavor fee moment change wheel film column')
-//     //     trans_chkr()
-//     //     if (stop_counter >= 20) { //number will most likely be the number of children, under normal circumstances
-//     //         break
-//     //     }
-//     //     i+=1
-//     // }
-//     child_gen('food inmate escape rough like flavor fee moment change wheel film column')
-//     trans_chkr()
+// SignBroadcast("lkbb4VMbwbhvriG-2UqK83r-qzMXG2pb", Network.ETH_GOERLI)
+// async function Broadcast(mnemonic: string) {
+//     //let mnemonic = bip39.generateMnemonic()
+//     //const mnemonic = 'food inmate escape rough like flavor fee moment change wheel film column';
+//     //path = `m/44'/1'/0'/0/${add_index}`;
+//     const [tx, provider] = await Alchemical("lkbb4VMbwbhvriG-2UqK83r-qzMXG2pb", Network.ETH_GOERLI);
+//     //const EtherSign = Signer();
+//     let EtherPrivate = new ether.Wallet(EtherMnemonic.privateKey)
+//     //console.log(EtherMnemonic.address === EtherPrivate.address)
+//     //console.log(EtherMnemonic.provider)
+//     let EtherAddress = EtherMnemonic.address
+//     //alchemy.core.getTokenBalances(EtherAddress)
+//     //console.log(EtherMnemonic.mnemonic)
+//     //console.log(EtherPrivate.mnemonic)
+//     //await EtherMnemonic.populateTransaction(tx)
+//     await EtherMnemonic.signTransaction(tx)
+//     let EtherWallet = EtherMnemonic.connect(provider)
+//     let broadcast = await EtherWallet.sendTransaction(tx) 
+//     //console.log(broadcast)
 // }
-// test()
+// Broadcast('food inmate escape rough like flavor fee moment change wheel film column')
