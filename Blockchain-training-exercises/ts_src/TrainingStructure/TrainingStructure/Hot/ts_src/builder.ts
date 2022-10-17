@@ -1,4 +1,4 @@
-import * as ether from "ethers"
+
 
 export abstract class Builder {
     xpub: any;
@@ -16,5 +16,4 @@ export abstract class Builder {
     abstract createTransaction(targetAddress: string, value: number, provider: any ): Promise<any>;
     abstract signTransaction(): Promise<any>;
     abstract postTransaction(transaction): Promise<any>;
-
 }

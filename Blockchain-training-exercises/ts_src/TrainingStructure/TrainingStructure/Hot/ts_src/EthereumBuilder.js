@@ -68,7 +68,6 @@ var fs = require("fs");
 var ethers = require('ethers');
 var ether = require("ethers");
 var Utils_1 = require("./Utils");
-var Web3 = require('web3');
 var EthereumBuilder = /** @class */ (function (_super) {
     __extends(EthereumBuilder, _super);
     function EthereumBuilder(pub, path, provider) {
@@ -97,11 +96,9 @@ var EthereumBuilder = /** @class */ (function (_super) {
             return __generator(this, function (_c) {
                 switch (_c.label) {
                     case 0:
-                        network = new ether.providers.AlchemyProvider(this.provider);
+                        network = new ether.ethers.providers.AlchemyProvider(this.provider);
                         hdnode = ether.utils.HDNode.fromExtendedKey(this.xpub);
                         address = hdnode.address;
-                        console.log(hdnode.publicKey);
-                        console.log(address);
                         pubkey = hdnode.publicKey;
                         _b = {
                             to: targetAddress
@@ -116,11 +113,11 @@ var EthereumBuilder = /** @class */ (function (_super) {
                             _b.value = ethers.BigNumber.from(value).toNumber(),
                             _b.gasLimit = 21000,
                             _b);
-                        preimage = ethers.utils.serializeTransaction(tx);
-                        message = ethers.utils.keccak256(preimage);
+                        preimage = ether.utils.serializeTransaction(tx);
+                        message = ether.utils.keccak256(preimage);
                         signatureRequests = {
                             preimage: preimage,
-                            signatureRequests: [{ message: message, publicKey: pubkey, path: this.path, curve: "Secp256k1" }]
+                            signatureRequests: [{ message: message, publicKey: pubkey, path: this.path, curve: "secp256k1" }]
                         };
                         return [2 /*return*/, (0, Utils_1.writeRecords)(null, signatureRequests)];
                 }
@@ -137,7 +134,6 @@ var EthereumBuilder = /** @class */ (function (_super) {
                 signedMsg = JSON.parse(response);
                 parseTx = ether.ethers.utils.parseTransaction(signedMsg.preimage);
                 serialTx = ether.ethers.utils.serializeTransaction(parseTx, signedMsg.signature.signature);
-                // console.log(serialTx)
                 return [2 /*return*/, serialTx];
             });
         });
@@ -150,14 +146,13 @@ var EthereumBuilder = /** @class */ (function (_super) {
             return __generator(this, function (_c) {
                 switch (_c.label) {
                     case 0:
-                        network = new ethers.providers.AlchemyProvider(this.provider);
+                        network = new ether.ethers.providers.AlchemyProvider(this.provider);
                         _b = (_a = network).sendTransaction;
                         return [4 /*yield*/, this.signTransaction()];
-                    case 1: return [4 /*yield*/, _b.apply(_a, [_c.sent()])
-                        // console.log(broadcast)
-                    ];
+                    case 1: return [4 /*yield*/, _b.apply(_a, [_c.sent()])];
                     case 2:
                         broadcast = _c.sent();
+                        console.log(broadcast);
                         return [2 /*return*/];
                 }
             });
@@ -168,7 +163,7 @@ var EthereumBuilder = /** @class */ (function (_super) {
 exports.EthereumBuilder = EthereumBuilder;
 function main() {
     return __awaiter(this, void 0, void 0, function () {
-        var xPJ, xpj, builder, _a, _b, args;
+        var xPJ, xpj, builder, args, _a, _b;
         return __generator(this, function (_c) {
             switch (_c.label) {
                 case 0:
@@ -177,24 +172,22 @@ function main() {
                     return [4 /*yield*/, new EthereumBuilder(xpj.xpub, xpj.path, 'goerli').init()];
                 case 1:
                     builder = _c.sent();
-                    builder.createTransaction("0x71CB05EE1b1F506fF321Da3dac38f25c0c9ce6E1", 1000, "goerli");
-                    // await builder.signTransaction()
+                    args = process.argv;
+                    if (!(args.length > 2)) return [3 /*break*/, 4];
+                    if (!(args[2] == "--sign")) return [3 /*break*/, 3];
+                    console.log("Signing and Posting Transaction!");
                     _b = (_a = builder).postTransaction;
                     return [4 /*yield*/, builder.signTransaction()];
                 case 2:
-                    // await builder.signTransaction()
                     _b.apply(_a, [_c.sent()]);
-                    args = process.argv;
-                    if (args.length > 2) {
-                        if (args[2] == "--sign") {
-                            console.log("Signing and Posting Transaction!");
-                            console.log("Transaction Posted!");
-                        }
-                    }
-                    else {
-                        console.log("Building Transaction!");
-                    }
-                    return [2 /*return*/];
+                    console.log("Transaction Posted!");
+                    _c.label = 3;
+                case 3: return [3 /*break*/, 5];
+                case 4:
+                    console.log("Building Transaction!");
+                    builder.createTransaction("0x71CB05EE1b1F506fF321Da3dac38f25c0c9ce6E1", 1000, builder.provider);
+                    _c.label = 5;
+                case 5: return [2 /*return*/];
             }
         });
     });

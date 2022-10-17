@@ -1,9 +1,8 @@
 import { Builder } from './builder';
 import { WalletData } from "./EthUtils";
 export declare class EthereumBuilder extends Builder {
-    transaction: any;
     data: WalletData;
-    constructor(xpub: any, path: any);
+    constructor(pub: any, path: any, provider: any);
     init: () => Promise<this>;
     show: () => Promise<any>;
     createTransaction(targetAddress: any, value: number, { ...params }?: {}): Promise<any>;
